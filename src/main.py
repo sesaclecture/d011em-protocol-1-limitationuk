@@ -25,9 +25,14 @@ def blink_led() -> None:
     - 종료시 LED는 OFF 상태
     """
     # TODO: blink_led 구현
+    led = LED(18)
 
-    raise NotImplementedError
-
+    for _ in range(10):
+        led.on()
+        time.sleep(1)
+        led.off()
+        time.sleep(1)
+      
 
 def check_to_input_button() -> None:
     """
@@ -40,7 +45,29 @@ def check_to_input_button() -> None:
     """
     # TODO: check_to_input_button 구현
 
-    raise NotImplementedError
+    btn = Button(18, pull_up=True)
+    prev = btn.is_pressed
+    count = 0
+
+    while True:
+        # 현재 눌림 상태 읽기(True=눌림, False=떼어짐)
+        cur = btn.is_pressed
+
+        if count >= 10: #10번 받았으면 종료
+            break
+
+        # 상태 변화가 있을 때만 출력
+        if cur != prev:
+            if cur:
+                print("pressed")    # 눌리면 출력
+                count += 1
+            else:
+                print("released")   # 떼어지면 출력
+            prev = cur  # 이전 상태 갱신
+        
+        # 짧게 대기하여 cpu 과부하 방지
+        time.sleep(0.01)
+    
 
 
 def blink_led_through_button() -> None:
@@ -54,10 +81,20 @@ def blink_led_through_button() -> None:
     """
     # TODO: blink_led_through_button 구현
     led = LED(12)
-    led.on()
-
-    raise NotImplementedError
-
+    btn = Button(13, pull_up=True)
+    count = 0
+    
+   
+    if btn.is_pressed:
+        count += 1
+        if count >= 10:
+            return
+        else:
+            while btn.is_pressed:
+                led.on()
+                time.sleep(0.5)
+                led.off()
+                time.sleep(0.5)
 
 def transmit_msg() -> None:
     """
@@ -67,17 +104,40 @@ def transmit_msg() -> None:
     """
     # TODO: blink_led_through_button 구현
 
-    raise NotImplementedError
+    ser = Serial("/dev/ttyAMA3", baudrate=115200, timeout=1.0)
+    
+    for i in range(10):
+        msg = f"Hello World! {i}\n"
+        ser.write(msg.encode())
+        time.sleep(1)
+
+    ser.close()
 
 
 def receive_msg() -> None:
     """
-    [문제 2] UART3에서 줄 단위로 읽어 화면에 출력.
+    [문제 2] UART료3에서 줄 단위로 읽어 화면에 출력.
     - 'exit' (대소문자 무시) 라인을 수신하면 함수 종료
     """
-    # TODO: blink_led_through_button 구현
+    # TODO: receive_msg 구현
+    
+    # 시리얼 주소
+    ser = Serial("/dev/ttyAMA3", baudrate=115200, timeout=1.0)
+    buffer = "" # 문자를 임시 저장할 변수
 
-    raise NotImplementedError
+    while True:
+        raw = ser.read().decode() # 시리얼에서 한 글자 읽기(디코딩)
+        if not raw: # 데이터 유무 확인 
+            continue  
+        buffer += raw   # 버퍼에 입력
+
+        while '\n' in buffer:  # 줄 단위로 처리
+                line, buffer = buffer.split('\n', 1) # 첫 번째 줄과 나머지 버퍼로 분리
+                print(line)
+                if line.lower() == "exit": # exit 수신하면 종료
+                    return
+
+
 
 
 if __name__ == "__main__":

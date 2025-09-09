@@ -84,18 +84,19 @@ def test_transmit_msg():
 
 def test_receive_msg(capsys):
     """ test for receive_msg() """
-    t = threading.Thread(target=receive_msg, daemon=True)
-    t.start()
+    t = threading.Thread(target=receive_msg, daemon=True)   #threading.Thread(스레드에 동작할 함수, 함수 인자 값) 
+    t.start()   # 스레드 실행
     time.sleep(0.005)
 
     # input the data to be received
-    fake = serial.Serial.registry["/dev/ttyAMA3"]
+    fake = serial.Serial.registry["/dev/ttyAMA3"]   # 시리얼에 테스트용 데이터 입력
     fake.inject_rx(b"foo\nbar\nexit\n")
 
     # wait the thread to finish
-    t.join(timeout=2.0)
-    assert not t.is_alive(), "Doesn't exit the receive_msg yet!"
+    t.join(timeout=2.0) #스레드가 끝날 때까지 2초 대기
+    assert not t.is_alive(), "Doesn't exit the receive_msg yet!" 
+    # 실행 중이면 True, 끝나면 False
 
     # check the output
-    out = capsys.readouterr().out.strip().splitlines()
+    out = capsys.readouterr().out.strip().splitlines()  # 표준 출력(stdout)과 표준 에러(stderr)를 캡처
     assert out == ["foo", "bar", "exit"]
